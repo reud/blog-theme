@@ -1,0 +1,35 @@
+{{ $result := dict "exists" false "permalink" nil "resource" nil "isDefault" false "injected" false }}
+{{ $image := partialCached "helper/image" (dict "Context" . "Type" "opengraph") .RelPermalink "opengraph" }}
+{{ $result := merge $result $image }}
+<!-- 特定のパラメータがページに設定されていたらtwitterのog_cardsを書き換える -->
+{{ if .IsPage }}
+    {{ $twcardValue := index .Context.Params "twitter_cards" }}
+    {{ if $twcardValue }}
+        <!-- If page has `image` field set -->
+        {{ $result = merge $result (dict "injected" true) }}
+        {{ $url := urls.Parse $twcardValue }}
+    
+        {{ if or (eq $url.Scheme "http") (eq $url.Scheme "https") }}
+            <!-- Is an external image -->
+            {{ $result = merge $result (dict "permalink" $twcardValue) }}
+        {{ else }}
+            {{ $pageResourceImage := .Context.Resources.GetMatch (printf "%s" ($twcardValue | safeURL)) }}
+            
+            {{ if $pageResourceImage }}
+                <!-- If image is found under page bundle -->
+                {{ $result = merge $result (dict "permalink" $pageResourceImage.RelPermalink) }}
+    
+                <!-- Disable SVG image processing, not supported by Hugo -->
+                {{ if ne (path.Ext $twcardValue) ".svg" }}
+                    {{ $result = merge $result (dict "resource" $pageResourceImage) }}
+                {{ end }}
+            {{ else }}
+                <!-- Can not find the image under page bundle. Could be a relative linked image -->
+                {{ $result = merge $result (dict "permalink" (relURL $twcardValue)) }}
+            {{ end }}
+        {{ end }}
+    {{ end }}
+{{ end }}
+
+
+{{ return $result }}
