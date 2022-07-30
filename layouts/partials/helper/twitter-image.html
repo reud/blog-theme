@@ -1,11 +1,11 @@
 {{ $result := dict "exists" false "permalink" nil "resource" nil "isDefault" false "injected" false }}
-{{ $image := partialCached "helper/image" (dict "Context" . "Type" "opengraph") .RelPermalink "opengraph" }}
+{{ $image := partialCached "helper/image" (dict "Context" .Context "Type" "opengraph") .RelPermalink "opengraph" }}
 {{ $result := merge $result $image }}
 <!-- 特定のパラメータがページに設定されていたらtwitterのog_cardsを書き換える -->
-{{ if .IsPage }}
-    {{ $twcardValue := index .Context.Params "twitter_cards" }}
+{{ if .Context.IsPage }}
+    {{ $twcardValue := index .Context.Params "twitter_card" }}
     {{ if $twcardValue }}
-        <!-- If page has `image` field set -->
+        <!-- If page has `twitter_card` field set -->
         {{ $result = merge $result (dict "injected" true) }}
         {{ $url := urls.Parse $twcardValue }}
     
