@@ -12,7 +12,11 @@
 {{- $image := partialCached "helper/twitter-image" (dict "Context" . "Type" "opengraph") .RelPermalink "opengraph" -}}
 {{ partial "helper/console-log" (index .Params "twitter_card")}}
 {{- if $image.exists -}}
-    <meta name="twitter:card" content="{{ default `summary_large_image` .Site.Params.opengraph.twitter.card }}">
+    {{- if $image.injected -}}
+        <meta name="twitter:card" content="summary_large_image">
+    {{- else -}} 
+        <meta name="twitter:card" content="{{ default `summary_large_image` .Site.Params.opengraph.twitter.card }}">
+    {{- end -}}
     <meta name="twitter:image" content='{{ absURL $image.permalink }}' />
     <meta name="dbg:injected-tcard" content='{{ $image.injected }}' />
 {{- end -}}
